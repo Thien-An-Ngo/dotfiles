@@ -75,13 +75,20 @@ check() {
     fi
 }
 
+# shell
 check zsh
-check tmux
 check starship
 check fzf
 check zoxide
+check atuin
+
+# terminal
+check tmux
+
+# editors
 check nvim
-check lazygit
+
+# modern CLI replacements
 check lsd
 check bat
 check rg
@@ -89,11 +96,129 @@ check fd
 check btop
 check dust
 check procs
+check yazi
+check xh
+check macchina
 check thefuck
 check fastfetch
-check nvm || check node
-check bun
+
+# version control
+check lazygit
 check gh
+
+# runtimes
+check nvm 2>/dev/null || check node
+check bun
+
+# productivity
+check task
+check timew
+check just
+check entr
+check pet
+
+# docker
+check ctop
+check lazydocker
+
+# remote
+check mosh
+check tmate
+check xxh
+
+# database
+check pgcli
+
+# notes & knowledge
+check nb
+check dnote
+check taskbook
+check eureka
+
+# cheatsheets & command search
+check navi
+check intelli-shell
+
+# modern ls
+check eza
+
+# disk usage
+check gdu
+
+# API clients
+check posting
+check atac
+check jwt-ui
+
+# git tools
+check forgit
+
+# multi-repo
+check mani
+
+# networking & web
+check lychee
+check cariddi
+check dirsearch
+
+# remote
+check mosh
+check tmate
+check xxh
+check lazyssh
+
+# finance
+check bagels
+
+# backup
+check gobackup
+
+# systemd
+check isd
+
+# calculator
+check kalker
+
+# CSV / data
+check xan
+
+# publishing
+check surge
+
+# docker & build
+check depot
+check ctop
+check lazydocker
+
+# faster alternatives & essentials
+check mise      # replaces nvm + pyenv (auto-activates in .zshrc if present)
+check uv        # replaces pip/pipx; aliased as pip/pipx
+check delta     # git diff pager; wired into .gitconfig
+check tealdeer  # rust tldr; same binary name, instant startup
+check watchexec # rust entr; aliased as watch
+check gitui     # rust lazygit; aliased as gu
+check btm       # rust btop; aliased as top (falls back to btop)
+check dua       # rust dust; aliased as du (falls back to dust)
+check skim      # rust fzf alternative
+check jq
+check yq
+check fx
+check hyperfine # aliased as bench
+check topgrade  # aliased as upgrade
+
+# database
+check pgcli
+
+# environment
+check envio
+
+# utilities
+check tldr
+check has
+check yank
+check bcal
+check mklicense
+check themer
 
 # ─── TPM (tmux plugin manager) ───────────────────────────────────────────────
 echo ""
@@ -105,6 +230,28 @@ else
     green "  ✓ TPM already installed"
 fi
 
+# ─── fzf-tab (Oh My Zsh plugin) ──────────────────────────────────────────────
+echo ""
+FZF_TAB_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fzf-tab"
+if [ ! -d "$FZF_TAB_DIR" ]; then
+    echo "── Installing fzf-tab ──"
+    git clone https://github.com/Aloxaf/fzf-tab "$FZF_TAB_DIR"
+    green "  fzf-tab installed."
+else
+    green "  ✓ fzf-tab already installed"
+fi
+
+# ─── forgit (Oh My Zsh plugin) ───────────────────────────────────────────────
+echo ""
+FORGIT_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/forgit"
+if [ ! -d "$FORGIT_DIR" ]; then
+    echo "── Installing forgit ──"
+    git clone https://github.com/wfxr/forgit "$FORGIT_DIR"
+    green "  forgit installed."
+else
+    green "  ✓ forgit already installed"
+fi
+
 # ─── Summary ─────────────────────────────────────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════"
@@ -114,7 +261,8 @@ if [ "$BACKED_UP" = "1" ]; then
 fi
 echo ""
 echo "Next steps:"
-echo "  1. Reload shell:        source ~/.zshrc"
-echo "  2. Reload tmux config:  Prefix + r  (or: tmux source-file ~/.tmux.conf)"
-echo "  3. Install tmux plugins inside tmux:  Prefix + I"
+echo "  1. Reload shell:           source ~/.zshrc"
+echo "  2. Reload tmux config:     Prefix + r  (or: tmux source-file ~/.tmux.conf)"
+echo "  3. Install tmux plugins:   inside tmux → Prefix + I"
+echo "  4. Sync shell history:     atuin login  (optional)"
 echo ""

@@ -31,7 +31,7 @@ install.sh      ← idempotent symlink setup; run after cloning
 
 | File | Purpose |
 |------|---------|
-| `home/.zshrc` | Shell config: Oh My Zsh, plugins (git, pyenv), aliases, PATH, FZF, zoxide, starship init |
+| `home/.zshrc` | Shell config: Oh My Zsh, plugins (git pyenv docker bun rust npm fzf-tab), aliases, PATH, FZF, atuin, zoxide, starship init |
 | `home/.zshenv` | Env for all shells: pyenv root, pipx PATH, cargo env |
 | `home/.zprofile` | Login-shell env: `pyenv init --path` |
 | `home/.tmux.conf` | Tmux: prefix `Ctrl+a`, pastel powerline theme, vi copy mode, TPM plugins |

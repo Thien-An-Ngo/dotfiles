@@ -77,12 +77,18 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git pyenv)
+plugins=(git pyenv docker bun rust npm fzf-tab forgit)
 
 fpath+=~/.zfunc
 autoload -Uz compinit && compinit
 
 source $ZSH/oh-my-zsh.sh
+
+# fzf-tab — replace zsh completion menu with fzf
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*'        fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+zstyle ':fzf-tab:*' fzf-flags --color='hl:#9A348E,hl+:#DA627D'
 
 # User configuration
 
@@ -144,9 +150,18 @@ export PATH="$PATH:/opt/nvim/"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+# nvm — lazy-loaded to avoid ~500ms startup penalty; loads on first use of node/npm/npx/nvm
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"   # mise manages node + python + more; replaces nvm+pyenv
+else
+  nvm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; nvm  "$@"; }
+  node() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; node "$@"; }
+  npm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npm  "$@"; }
+  npx()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npx  "$@"; }
+  yarn() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; yarn "$@"; }
+fi
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
@@ -156,15 +171,25 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # ============================================================
 
 # --- Better tool defaults (install: see SETUP.md) ---
-command -v lsd  &>/dev/null && alias ls='lsd'
-command -v lsd  &>/dev/null && alias ll='lsd -la'
-command -v lsd  &>/dev/null && alias lt='lsd --tree'
-command -v bat  &>/dev/null && alias cat='bat'
-command -v rg   &>/dev/null && alias grep='rg'
-command -v fd   &>/dev/null && alias find='fd'
-command -v btop &>/dev/null && alias top='btop'
-command -v dust &>/dev/null && alias du='dust'
-command -v procs &>/dev/null && alias ps='procs'
+command -v lsd      &>/dev/null && alias ls='lsd'
+command -v lsd      &>/dev/null && alias ll='lsd -la'
+command -v lsd      &>/dev/null && alias lt='lsd --tree'
+command -v bat      &>/dev/null && alias cat='bat'
+command -v rg       &>/dev/null && alias grep='rg'
+command -v fd       &>/dev/null && alias find='fd'
+command -v btm      &>/dev/null && alias top='btm'   || { command -v btop &>/dev/null && alias top='btop'; }
+command -v dua      &>/dev/null && alias du='dua'    || { command -v dust &>/dev/null && alias du='dust'; }
+command -v procs    &>/dev/null && alias ps='procs'
+command -v yazi     &>/dev/null && alias y='yazi'
+command -v xh       &>/dev/null && alias http='xh'
+command -v macchina &>/dev/null && alias sysinfo='macchina'
+command -v tldr     &>/dev/null && alias help='tldr'
+command -v gitui    &>/dev/null && alias gu='gitui'
+command -v hyperfine &>/dev/null && alias bench='hyperfine'
+command -v uv       &>/dev/null && alias pip='uv pip' && alias pipx='uv tool'
+command -v watchexec &>/dev/null && alias watch='watchexec'
+command -v topgrade &>/dev/null && alias upgrade='topgrade'
+command -v jq       &>/dev/null && alias jq='jq --tab'
 
 # --- Navigation ---
 alias ..='cd ..'
@@ -225,6 +250,12 @@ export PATH="$HOME/.thefuck-env/bin:$PATH"
 eval "$(~/.thefuck-env/bin/thefuck --alias fuck)"
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+
+# navi — Ctrl+G opens interactive cheatsheet picker
+command -v navi &>/dev/null && eval "$(navi widget zsh)"
+
+# atuin — magic shell history (replaces Ctrl+R; init last so it wins the binding)
+command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
 # OpenClaw Completion
 source "/home/labor-client18/.openclaw/completions/openclaw.zsh"
