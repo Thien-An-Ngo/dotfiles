@@ -1,0 +1,38 @@
+{
+  "env": {
+    "CLAUDE_CODE_SHELL": "zsh"
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreCompact\", \"additionalContext\": \"MEMORY CHECKPOINT: Before compacting, review this session and save any valuable insights to the project memory directory. Focus on: new project decisions or architecture choices, user preferences or feedback corrections, discovered gotchas or non-obvious patterns, updated project state. Skip: ephemeral task progress, code details readable from the repo, anything already in memory. Use the established memory file format with frontmatter (name/description/type fields). Update MEMORY.md index for any new files.\"}}'",
+            "statusMessage": "Preparing memory checkpoint..."
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "gitlab@claude-plugins-official": true,
+    "coderabbit@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "frontend-design@claude-code-plugins": true
+  },
+  "theme": "dark"
+}

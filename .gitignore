@@ -1,0 +1,43 @@
+# ─── Browser profiles ────────────────────────────────────────────────────────
+google-chrome/
+google-chrome-for-testing/
+
+# ─── IDE / application data ──────────────────────────────────────────────────
+Code/
+vscode-sqltools/
+
+# ─── Agent tool caches (crush/goose are just symlinks to ~/.agents/skills) ──
+crush/
+goose/
+
+# ─── System / runtime state ──────────────────────────────────────────────────
+pulse/
+wslu/
+configstore/
+encore/
+mimeapps.list
+
+# ─── Poetry project files (not user config) ──────────────────────────────────
+pypoetry/poetry.lock
+pypoetry/pyproject.toml
+
+# ─── gh auth tokens ──────────────────────────────────────────────────────────
+gh/hosts.yml
+
+# ─── Micro editor state ──────────────────────────────────────────────────────
+micro/backups/
+micro/buffers/
+
+# ─── thefuck compiled cache ──────────────────────────────────────────────────
+thefuck/__pycache__/
+
+# ─── Backups created by install.sh ───────────────────────────────────────────
+*.bak
+.dotfiles-backup-*/
+
+# ─── Secrets / sensitive ─────────────────────────────────────────────────────
+home/.env
+home/.env.*
+home/.zsh_history
+home/.bash_history
+home/.zshrc.local

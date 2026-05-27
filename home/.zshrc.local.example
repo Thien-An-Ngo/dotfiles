@@ -1,0 +1,18 @@
+# ~/.zshrc.local — machine-local secrets and overrides
+# Copy to ~/.zshrc.local (gitignored) and fill in real values.
+
+# ─── API keys ────────────────────────────────────────────────────────────────
+export GEMINI_API_KEY=""
+export ANTHROPIC_API_KEY=""
+export OPENAI_API_KEY=""
+
+# ─── Work / project-specific env ─────────────────────────────────────────────
+# export DATABASE_URL=""
+# export AWS_PROFILE=""
+# export GITHUB_TOKEN=""
+
+# ─── Machine-specific PATH additions ─────────────────────────────────────────
+# export PATH="$PATH:/opt/some-local-tool/bin"
+
+# ─── Local aliases / overrides ───────────────────────────────────────────────
+# alias work='cd ~/workspace/my-project'
