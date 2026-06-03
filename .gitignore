@@ -35,6 +35,9 @@ thefuck/__pycache__/
 *.bak
 .dotfiles-backup-*/
 
+# ─── Chezmoi machine-local config (never committed — contains sourceDir + age key path) ──
+chezmoi/chezmoi.toml
+
 # ─── Secrets / sensitive ─────────────────────────────────────────────────────
 home/.env
 home/.env.*

@@ -1,0 +1,35 @@
+# .chezmoiignore — tells chezmoi which files in the source dir are NOT dotfiles
+# to be applied to the home directory. Everything listed here is repo
+# infrastructure, not a managed dotfile.
+
+# ─── Repo meta ────────────────────────────────────────────────────────────────
+README.md
+CLAUDE.md
+.gitignore
+.chezmoiignore
+
+# ─── Planning documents ───────────────────────────────────────────────────────
+plan/
+
+# ─── System-specific install scripts ─────────────────────────────────────────
+arch/
+apt/
+brew/
+nix/
+nixos/
+windows/
+
+# ─── Shared scripts (called by run_once, not dotfiles) ───────────────────────
+scripts/
+
+# ─── Chezmoi machine-local config ────────────────────────────────────────────
+# chezmoi/chezmoi.toml is gitignored above; this guards against it
+# accidentally appearing to chezmoi as a managed file
+chezmoi/chezmoi.toml
+
+# ─── Nvim submodule (has its own repo + CLAUDE.md) ───────────────────────────
+nvim/
+
+# ─── Nix manager (referenced by nix/install.sh, not a home dotfile directly) ─
+# Will be moved to dot_config/nix-manager/ in step 2 — until then, ignore
+nix-manager/
