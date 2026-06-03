@@ -1,7 +1,22 @@
-# Copy this to vars.nix and fill in your values, or run ./confninit.sh
+# Copy to vars.nix and fill in your values, or run ./confninit.sh
 {
-  username = "YOUR_USERNAME";      # output of: whoami
-  fullName = "Your Full Name";     # git commit author name
-  email    = "you@example.com";    # git commit author email
+  username = "YOUR_USERNAME";       # output of: whoami
+  fullName = "Your Full Name";      # git commit author name
+  email    = "you@example.com";     # git commit author email
   homeDir  = "/home/YOUR_USERNAME"; # output of: echo $HOME
+  platform = "wsl";                 # "wsl" | "linux"
+
+  # Pastel Dracula palette — edit to retheme everything at once
+  colors = {
+    purple  = "#9A348E";
+    salmon  = "#DA627D";
+    peach   = "#FCA17D";
+    steel   = "#86BBD8";
+    teal    = "#06969A";
+    navy    = "#33658A";
+    bg      = "#21222c";
+    bgAlt   = "#44475a";
+    fg      = "#f8f8f2";
+    comment = "#6272a4";
+  };
 }

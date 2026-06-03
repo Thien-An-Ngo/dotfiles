@@ -4,7 +4,6 @@
 set -euo pipefail
 
 VARS_FILE="$(dirname "$0")/nixos/vars.nix"
-EXAMPLE_FILE="$(dirname "$0")/nixos/vars.nix.example"
 
 # ── colours ──────────────────────────────────────────────────────────────
 bold=$'\e[1m'; reset=$'\e[0m'; cyan=$'\e[36m'; green=$'\e[32m'; yellow=$'\e[33m'
@@ -26,27 +25,30 @@ printf "Generates %s\n" "$VARS_FILE"
 # ── load existing values as defaults (if vars.nix already exists) ─────────
 if [[ -f "$VARS_FILE" ]]; then
   hint "Existing vars.nix found — using its values as defaults."
-  cur_username=$(grep 'username' "$VARS_FILE" | sed 's/.*= "\(.*\)".*/\1/')
-  cur_fullName=$(grep 'fullName' "$VARS_FILE" | sed 's/.*= "\(.*\)".*/\1/')
-  cur_email=$(grep 'email'    "$VARS_FILE" | sed 's/.*= "\(.*\)".*/\1/')
-  cur_homeDir=$(grep 'homeDir' "$VARS_FILE" | sed 's/.*= "\(.*\)".*/\1/')
-else
-  cur_username="$(whoami)"
-  cur_fullName="Your Full Name"
-  cur_email="you@example.com"
-  cur_homeDir="/home/$(whoami)"
+  extract() { grep "$1" "$VARS_FILE" | sed 's/.*= "\(.*\)".*/\1/' | head -1; }
+  cur_username="${cur_username:-$(extract 'username')}"
+  cur_fullName="${cur_fullName:-$(extract 'fullName')}"
+  cur_email="${cur_email:-$(extract 'email')}"
+  cur_homeDir="${cur_homeDir:-$(extract 'homeDir')}"
+  cur_platform="${cur_platform:-$(extract 'platform')}"
 fi
+
+cur_username="${cur_username:-$(whoami)}"
+cur_fullName="${cur_fullName:-Your Full Name}"
+cur_email="${cur_email:-you@example.com}"
+cur_homeDir="${cur_homeDir:-/home/$(whoami)}"
+cur_platform="${cur_platform:-wsl}"
 
 # ── questions ─────────────────────────────────────────────────────────────
 
 header "Username"
-hint "This becomes your NixOS user and the home-manager flake output key."
+hint "Becomes your NixOS user account name and the home-manager flake key."
 hint "Run 'whoami' if unsure."
 ask "Username" "$cur_username" NEW_USERNAME
 ok "username = \"$NEW_USERNAME\""
 
 header "Home directory"
-hint "Almost always /home/<username>. Change if you use a non-standard layout."
+hint "Almost always /home/<username>. Change only for non-standard layouts."
 ask "Home directory" "/home/$NEW_USERNAME" NEW_HOMEDIR
 ok "homeDir = \"$NEW_HOMEDIR\""
 
@@ -60,6 +62,19 @@ hint "Appears in every git commit you make."
 ask "Email" "$cur_email" NEW_EMAIL
 ok "email = \"$NEW_EMAIL\""
 
+header "Platform"
+hint "Controls clipboard commands and WSL-specific shell features."
+hint "  wsl   = NixOS-WSL or home-manager on any WSL distro"
+hint "  linux = bare Arch, bare NixOS, or any native Linux"
+ask "Platform (wsl/linux)" "$cur_platform" NEW_PLATFORM
+case "$NEW_PLATFORM" in
+  wsl|linux) ok "platform = \"$NEW_PLATFORM\"";;
+  *)
+    printf "  ${yellow}Unknown platform '%s', defaulting to 'linux'${reset}\n" "$NEW_PLATFORM"
+    NEW_PLATFORM="linux"
+    ;;
+esac
+
 # ── write vars.nix ────────────────────────────────────────────────────────
 
 header "Writing vars.nix"
@@ -70,6 +85,21 @@ cat > "$VARS_FILE" <<EOF
   fullName = "$NEW_FULLNAME";
   email    = "$NEW_EMAIL";
   homeDir  = "$NEW_HOMEDIR";
+  platform = "$NEW_PLATFORM"; # "wsl" | "linux"
+
+  # Pastel Dracula palette — single source of truth for tmux, fzf, and fzf-tab
+  colors = {
+    purple  = "#9A348E";
+    salmon  = "#DA627D";
+    peach   = "#FCA17D";
+    steel   = "#86BBD8";
+    teal    = "#06969A";
+    navy    = "#33658A";
+    bg      = "#21222c";
+    bgAlt   = "#44475a";
+    fg      = "#f8f8f2";
+    comment = "#6272a4";
+  };
 }
 EOF
 ok "Written to $VARS_FILE"
@@ -77,9 +107,16 @@ ok "Written to $VARS_FILE"
 # ── next steps ────────────────────────────────────────────────────────────
 
 printf "\n${bold}Next steps${reset}\n"
-printf "  Standalone home-manager (existing install):\n"
-printf "    ${cyan}home-manager switch --flake ./nixos#%s${reset}\n\n" "$NEW_USERNAME"
-printf "  Full NixOS on WSL2:\n"
-printf "    ${cyan}nixos-rebuild switch --flake ./nixos#wsl${reset}\n\n"
-printf "  Commit your vars.nix to your personal fork so it travels with the repo:\n"
-printf "    ${cyan}git add nixos/vars.nix && git commit -m 'chore: personalise vars.nix'${reset}\n\n"
+printf "  1. Commit your vars.nix:\n"
+printf "       ${cyan}git add nixos/vars.nix && git commit -m 'chore: personalise vars.nix'${reset}\n\n"
+printf "  2. Apply the config:\n"
+if [[ "$NEW_PLATFORM" == "wsl" ]]; then
+  printf "       ${cyan}home-manager switch --flake ./nixos#%s${reset}   (standalone)\n" "$NEW_USERNAME"
+  printf "       ${cyan}nixos-rebuild switch --flake ./nixos#wsl${reset}  (full NixOS-WSL)\n\n"
+else
+  printf "       ${cyan}home-manager switch --flake ./nixos#%s${reset}\n\n" "$NEW_USERNAME"
+fi
+printf "  3. (Optional) Lock flake inputs for reproducibility:\n"
+printf "       ${cyan}cd nixos && nix flake update && git add flake.lock && git commit -m 'chore: lock flake inputs'${reset}\n\n"
+printf "  Tip: use ${cyan}nh home switch --flake ./nixos${reset} for a friendlier switch UX\n"
+printf "       after the first successful build.\n\n"

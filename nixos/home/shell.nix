@@ -1,18 +1,33 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, vars, ... }:
+let
+  c = vars.colors; # shorthand so color interpolations stay readable
+in
 {
   # ── Zsh ───────────────────────────────────────────────────────────────
   programs.zsh = {
     enable = true;
 
-    # Oh My Zsh core
+    # Sourced for EVERY zsh invocation (login, interactive, scripts).
+    # Keep minimal — only truly global env belongs here.
+    envExtra = ''. "$HOME/.cargo/env"'';
+
+    # Login-shell only: pyenv shim PATH must be set before .zshrc runs
+    # so that the correct python/pip are on PATH in every subshell.
+    profileExtra = ''
+      export PYENV_ROOT="$HOME/.pyenv"
+      [[ -d "$PYENV_ROOT/bin" ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+      command -v pyenv &>/dev/null && eval "$(pyenv init --path)"
+      export PATH="$HOME/.local/bin:$PATH"
+    '';
+
+    # Oh My Zsh
     oh-my-zsh = {
       enable  = true;
       theme   = "robbyrussell";
-      # fzf-tab and forgit come in via programs.zsh.plugins below
       plugins = [ "git" "docker" "rust" "npm" ];
     };
 
-    # External plugins managed by Nix (replaces manual OMZ custom installs)
+    # Nix-managed external plugins (replaces manual $ZSH_CUSTOM installs)
     plugins = [
       {
         name = "fzf-tab";
@@ -26,43 +41,42 @@
       }
     ];
 
-    # Completion function directory
+    # fpath must be extended before compinit; bashcompinit needed for pipx
     completionInit = ''
       fpath+=~/.zfunc
       autoload -Uz compinit && compinit
       autoload -U bashcompinit && bashcompinit
     '';
 
-    # ── Shell aliases ────────────────────────────────────────────────────
-    # Unconditional in NixOS — all these packages are declared in tools.nix
+    # ── Aliases ───────────────────────────────────────────────────────
+    # All packages are declared in tools.nix so aliases are unconditional.
     shellAliases = {
-      # Modern replacements
-      ls   = "lsd";
-      ll   = "lsd -la";
-      lt   = "lsd --tree";
-      cat  = "bat";
-      grep = "rg";
-      find = "fd";
-      top  = "btop";
-      du   = "dust";
-      ps   = "procs";
-      y    = "yazi";
-      http = "xh";
-      help = "tldr";
-      gu   = "gitui";
-      bench = "hyperfine";
-      pip  = "uv pip";
-      watch = "watchexec";
+      ls      = "lsd";
+      ll      = "lsd -la";
+      lt      = "lsd --tree";
+      cat     = "bat";
+      grep    = "rg";
+      find    = "fd";
+      top     = "btop";
+      du      = "dust";
+      ps      = "procs";
+      y       = "yazi";
+      http    = "xh";
+      help    = "tldr";
+      gu      = "gitui";
+      bench   = "hyperfine";
+      pip     = "uv pip";
+      watch   = "watchexec";
       upgrade = "topgrade";
-      jq   = "jq --tab";
+      jq      = "jq --tab";
       sysinfo = "macchina";
-      ff   = "fastfetch";
+      ff      = "fastfetch";
 
       # Navigation
       ".."   = "cd ..";
       "..."  = "cd ../..";
       "...." = "cd ../../..";
-      cd     = "z";   # zoxide
+      cd     = "z"; # zoxide
 
       # Tmux
       ta = "tmux attach -t";
@@ -75,122 +89,141 @@
       vimrc  = "\${EDITOR:-nvim} ~/.config/nvim/init.lua";
       tmuxrc = "\${EDITOR:-nvim} ~/.tmux.conf";
 
-      # Git shortcuts (additive to OMZ git plugin)
+      # Git (additive to OMZ git plugin)
       g    = "git";
       glog = "git log --oneline --graph --decorate";
-
-      # WSL clipboard
-      pbcopy   = "clip.exe";
-      pbpaste  = "powershell.exe -command Get-Clipboard";
+    }
+    # WSL-only: Windows clipboard binaries
+    // lib.optionalAttrs (vars.platform == "wsl") {
+      pbcopy  = "clip.exe";
+      pbpaste = "powershell.exe -command Get-Clipboard";
     };
 
-    # ── Session variables ────────────────────────────────────────────────
+    # ── Session variables ─────────────────────────────────────────────
     sessionVariables = {
-      # fzf: Dracula/pastel colour scheme matching starship palette
       FZF_DEFAULT_COMMAND = "fd --type f --hidden --follow --exclude .git 2>/dev/null || find . -type f";
-      FZF_DEFAULT_OPTS    = ''
-        --color=fg:#f8f8f2,bg:#21222c,hl:#9A348E
-        --color=fg+:#f8f8f2,bg+:#44475a,hl+:#DA627D
-        --color=info:#FCA17D,prompt:#DA627D,pointer:#9A348E
-        --color=marker:#86BBD8,spinner:#FCA17D,header:#6272a4
+      # Colors sourced from vars.colors — single source of truth
+      FZF_DEFAULT_OPTS = ''
+        --color=fg:${c.fg},bg:${c.bg},hl:${c.purple}
+        --color=fg+:${c.fg},bg+:${c.bgAlt},hl+:${c.salmon}
+        --color=info:${c.peach},prompt:${c.salmon},pointer:${c.purple}
+        --color=marker:${c.steel},spinner:${c.peach},header:${c.comment}
         --height 40% --border --reverse
       '';
-
       BUN_INSTALL = "$HOME/.bun";
       NVM_DIR     = "$HOME/.nvm";
       EDITOR      = "nvim";
     };
 
-    # ── initExtra: things that must run in-order at shell startup ────────
-    initExtra = ''
-      # ── Tmux autostart (WSL — skip if already in tmux or in VSCode) ──
-      if [ -z "$TMUX" ] && [ -t 0 ] && [ "$TERM_PROGRAM" != "vscode" ]; then
-        exec tmux new-session -A -s main
-      fi
+    # ── initExtra ─────────────────────────────────────────────────────
+    initExtra =
+      # ── Common — runs on every interactive shell ─────────────────────
+      ''
+        # Tmux autostart — skip if already inside tmux or inside VSCode
+        if [ -z "$TMUX" ] && [ -t 0 ] && [ "$TERM_PROGRAM" != "vscode" ]; then
+          exec tmux new-session -A -s main
+        fi
 
-      # ── fzf-tab appearance ────────────────────────────────────────────
-      zstyle ':completion:*' menu no
-      zstyle ':fzf-tab:complete:cd:*'         fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
-      zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
-      zstyle ':fzf-tab:*' fzf-flags --color='hl:#9A348E,hl+:#DA627D'
+        # fzf-tab: directory preview + palette from vars.colors
+        zstyle ':completion:*' menu no
+        zstyle ':fzf-tab:complete:cd:*'         fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+        zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+        zstyle ':fzf-tab:*' fzf-flags --color='hl:${c.purple},hl+:${c.salmon}'
 
-      # ── PATH additions for externally-managed runtimes ────────────────
-      # (Nix-managed packages are already on PATH via ~/.nix-profile)
-      export PATH="$HOME/.bun/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+        # PATH: externally-managed runtimes (Nix packages already on PATH)
+        export PATH="$HOME/.bun/bin:$HOME/.cargo/bin:$PATH"
 
-      # ── Bun ──────────────────────────────────────────────────────────
-      [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+        # Bun completions
+        [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-      # ── Pyenv ────────────────────────────────────────────────────────
-      if command -v pyenv &>/dev/null; then
-        export PYENV_ROOT="$HOME/.pyenv"
-        eval "$(pyenv init -)"
-      fi
+        # Pyenv shell functions (--path setup is in profileExtra)
+        if command -v pyenv &>/dev/null; then
+          eval "$(pyenv init -)"
+        fi
 
-      # ── Node (mise takes priority over nvm) ──────────────────────────
-      if command -v mise &>/dev/null; then
-        eval "$(mise activate zsh)"
-      else
-        # nvm — lazy-loaded to avoid ~500ms startup penalty
-        nvm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; nvm  "$@"; }
-        node() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; node "$@"; }
-        npm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npm  "$@"; }
-        npx()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npx  "$@"; }
-        yarn() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; yarn "$@"; }
-        [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-      fi
+        # Node: mise takes priority; nvm lazy-loaded to avoid ~500ms startup hit
+        if command -v mise &>/dev/null; then
+          eval "$(mise activate zsh)"
+        else
+          nvm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; nvm  "$@"; }
+          node() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; node "$@"; }
+          npm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npm  "$@"; }
+          npx()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npx  "$@"; }
+          yarn() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; yarn "$@"; }
+          [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+        fi
 
-      # ── pipx completions ──────────────────────────────────────────────
-      command -v pipx &>/dev/null && eval "$(register-python-argcomplete pipx)"
+        # pipx argcomplete (requires bashcompinit from completionInit)
+        command -v pipx &>/dev/null && eval "$(register-python-argcomplete pipx)"
 
-      # ── navi cheatsheet picker (Ctrl+G) ───────────────────────────────
-      command -v navi &>/dev/null && eval "$(navi widget zsh)"
+        # navi cheatsheet picker (Ctrl+G)
+        command -v navi &>/dev/null && eval "$(navi widget zsh)"
 
-      # ── OpenClaw completions (if installed) ───────────────────────────
-      [ -f "$HOME/.openclaw/completions/openclaw.zsh" ] && \
-        source "$HOME/.openclaw/completions/openclaw.zsh"
+        # OpenClaw completions (optional)
+        [ -f "$HOME/.openclaw/completions/openclaw.zsh" ] && \
+          source "$HOME/.openclaw/completions/openclaw.zsh"
 
-      # ── WSL clipboard helpers ─────────────────────────────────────────
-      fclip() { cat "$1" | clip.exe; }
-
-      # ── Machine-local overrides (API keys, machine-specific PATH, etc.) ─
-      [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
-    '';
+      ''
+      # ── WSL-specific ─────────────────────────────────────────────────
+      + lib.optionalString (vars.platform == "wsl") ''
+        fclip() { cat "$1" | clip.exe; }
+      ''
+      # ── Native Linux clipboard (Wayland-aware) ────────────────────────
+      + lib.optionalString (vars.platform != "wsl") ''
+        pbcopy() {
+          if [[ -n "$WAYLAND_DISPLAY" ]]; then wl-copy; else xclip -sel clip; fi
+        }
+        pbpaste() {
+          if [[ -n "$WAYLAND_DISPLAY" ]]; then wl-paste; else xclip -o -sel clip; fi
+        }
+        fclip() {
+          if [[ -n "$WAYLAND_DISPLAY" ]]; then wl-copy < "$1"; else xclip -sel clip < "$1"; fi
+        }
+      ''
+      # ── Always last: machine-local overrides ─────────────────────────
+      + ''
+        [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+      '';
   };
 
-  # ── Starship — config file is linked in default.nix ──────────────────
+  # ── direnv + nix-direnv ───────────────────────────────────────────────
+  # `cd` into any project with a flake.nix or shell.nix and the right
+  # runtime (Node, Python, Rust…) loads automatically. Replaces most of
+  # the per-project need for pyenv/nvm.
+  programs.direnv = {
+    enable               = true;
+    enableZshIntegration = true;
+    nix-direnv.enable    = true;
+  };
+
+  # ── Starship — config file linked in default.nix ──────────────────────
   programs.starship.enable = true;
 
-  # ── Atuin — magic shell history, wins the Ctrl+R binding ─────────────
+  # ── Atuin — searchable shell history; wins the Ctrl+R binding ─────────
   programs.atuin = {
-    enable  = true;
+    enable               = true;
     enableZshIntegration = true;
     settings = {
-      style     = "compact";
+      style        = "compact";
       inline_height = 15;
     };
   };
 
-  # ── Zoxide — smart cd replacement ────────────────────────────────────
+  # ── Zoxide — smart cd ─────────────────────────────────────────────────
   programs.zoxide = {
-    enable = true;
+    enable               = true;
     enableZshIntegration = true;
   };
 
-  # ── FZF — fuzzy finder (Ctrl+R history / Ctrl+T files / Alt+C cd) ────
+  # ── FZF — Ctrl+R / Ctrl+T / Alt+C ────────────────────────────────────
   programs.fzf = {
-    enable = true;
+    enable               = true;
     enableZshIntegration = true;
   };
 
-  # ── Thefuck — command correction ─────────────────────────────────────
+  # ── Thefuck — command correction ──────────────────────────────────────
   programs.thefuck = {
-    enable = true;
+    enable               = true;
     enableZshIntegration = true;
   };
-
-  # ── Zshenv: sourced by every zsh invocation ───────────────────────────
-  home.file.".zshenv".text = ''
-    . "$HOME/.cargo/env"
-  '';
 }

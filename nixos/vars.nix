@@ -4,4 +4,20 @@
   fullName = "Thien-An Ngo";
   email    = "tha.ngo@icloud.com";
   homeDir  = "/home/thienan";
+  platform = "wsl"; # "wsl" | "linux"
+
+  # Pastel Dracula palette — single source of truth for tmux, fzf, and fzf-tab.
+  # starship.toml reads these same values visually; edit both if you retheme.
+  colors = {
+    purple  = "#9A348E";
+    salmon  = "#DA627D";
+    peach   = "#FCA17D";
+    steel   = "#86BBD8";
+    teal    = "#06969A";
+    navy    = "#33658A";
+    bg      = "#21222c";
+    bgAlt   = "#44475a";
+    fg      = "#f8f8f2";
+    comment = "#6272a4";
+  };
 }
