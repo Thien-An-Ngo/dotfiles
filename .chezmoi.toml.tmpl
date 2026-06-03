@@ -11,9 +11,6 @@
 {{-   $windowsUser = promptStringOnce . "windowsUser" "Windows username (for WSL paths, e.g. JohnDoe)" -}}
 {{- end -}}
 
-[chezmoi]
-    sourceDir = "{{ .chezmoi.homeDir }}/.local/share/chezmoi/home"
-
 [data]
     name         = {{ $name         | quote }}
     email        = {{ $email        | quote }}
