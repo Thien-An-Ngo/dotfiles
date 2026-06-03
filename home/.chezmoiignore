@@ -29,9 +29,6 @@ dot_zshrc.local.example
 # accidentally appearing to chezmoi as a managed file
 chezmoi/chezmoi.toml
 
-# ─── Nvim submodule (has its own repo + CLAUDE.md) ───────────────────────────
-nvim/
-
 # ─── Chezmoi config dir (machine-local, gitignored) ──────────────────────────
 chezmoi/
 

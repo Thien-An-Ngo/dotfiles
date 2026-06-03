@@ -27,3 +27,10 @@
     url     = "https://github.com/tmux-plugins/tpm.git"
     clone.args   = ["--depth", "1"]
     pull.args    = ["--ff-only"]
+
+# ── Neovim config ─────────────────────────────────────────────────────────────
+[".config/nvim"]
+    type    = "git-repo"
+    url     = "https://github.com/Thien-An-Ngo/nvim.git"
+    clone.args   = ["--depth", "1"]
+    pull.args    = ["--ff-only"]

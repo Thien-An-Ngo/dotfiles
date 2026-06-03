@@ -22,6 +22,13 @@
   Affects: `dot_zshrc.tmpl`, `dot_tmux.conf`, `dot_gitconfig.tmpl`.
   Gate on `{{ .chezmoidata.wsl }}` boolean set during `chezmoi init` prompts.
 
+- [ ] **Convert chezmoi externals to git submodules**
+  Currently Oh My Zsh, fzf-tab, forgit, TPM, and nvim are managed via `.chezmoiexternal.toml`
+  (shallow clones on `chezmoi apply`). Consider converting them to proper git submodules
+  tracked in the repo for pinned versions and offline availability.
+  Trade-off: submodules require `git submodule update --init --recursive` on clone but give
+  reproducible snapshots; externals always pull latest which may break.
+
 - [ ] **Lightweight server install profile**
   A minimal install for headless/server machines where the full stack is unwanted.
   Stack: `zsh` + `starship` + `tmux` only. No zoxide, no atuin, no lsd, no heavy TUI tools.
