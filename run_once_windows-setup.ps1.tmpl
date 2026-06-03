@@ -1,0 +1,15 @@
+# chezmoi run_once — Windows PowerShell profile setup
+{{- if ne .chezmoi.os "windows" }}
+# Not Windows — this file is excluded via .chezmoiignore on non-Windows
+{{- end }}
+
+$src  = "{{ .chezmoi.sourceDir }}\windows\Microsoft.PowerShell_profile.ps1"
+$dest = $PROFILE
+
+$destDir = Split-Path $dest
+if (-not (Test-Path $destDir)) {
+    New-Item -ItemType Directory -Path $destDir | Out-Null
+}
+
+Copy-Item $src $dest -Force
+Write-Host "PowerShell profile written to $dest"
