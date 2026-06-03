@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# bulk-install.sh — install every tool used by this dotfiles repo on Arch Linux
-# Idempotent: skips anything already installed. Run as a normal user (sudo will be prompted).
+# brew-install.sh — install every tool used by this dotfiles repo via Homebrew
+# Works on macOS (Apple Silicon & Intel) and Linux (Linuxbrew).
+# Idempotent: skips anything already installed.
 
 set -euo pipefail
 
@@ -11,68 +12,67 @@ info()   { printf '  %s\n' "$*"; }
 
 has() { command -v "$1" &>/dev/null; }
 
-# ─── Ensure yay is available ─────────────────────────────────────────────────
-if ! has yay; then
+IS_MAC=false
+[[ "$(uname -s)" == "Darwin" ]] && IS_MAC=true
+
+# ─── Ensure Homebrew is installed ────────────────────────────────────────────
+if ! has brew; then
     echo ""
-    echo "── Installing yay (AUR helper) ──"
-    sudo pacman -S --needed --noconfirm git base-devel
-    git clone https://aur.archlinux.org/yay-bin.git /tmp/yay-bin
-    (cd /tmp/yay-bin && makepkg -si --noconfirm)
-    rm -rf /tmp/yay-bin
-    green "  yay installed"
+    echo "── Installing Homebrew ──"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    # Add brew to PATH for this session (location differs by platform/arch)
+    if $IS_MAC; then
+        if [[ -f /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
+        else
+            eval "$(/usr/local/bin/brew shellenv)"      # Intel
+        fi
+    else
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
+    green "  Homebrew installed"
 fi
 
-# ─── Helper: install from pacman if not present ──────────────────────────────
-pac() {
-    local pkg="$1"
+brew update
+
+# ─── Helper: brew install if binary not present ──────────────────────────────
+brw() {
+    local formula="$1"
     local bin="${2:-$1}"
     if has "$bin"; then
         info "already installed: $bin"
     else
-        echo "  [pacman] $pkg"
-        sudo pacman -S --needed --noconfirm "$pkg"
+        echo "  [brew] $formula"
+        brew install "$formula"
     fi
 }
 
-# ─── Helper: install from AUR if not present ─────────────────────────────────
-aur() {
-    local pkg="$1"
+# ─── Helper: brew install --cask (macOS only) ────────────────────────────────
+cask() {
+    if ! $IS_MAC; then
+        info "skipping cask (Linux): $1"
+        return
+    fi
+    local cask_name="$1"
     local bin="${2:-$1}"
     if has "$bin"; then
         info "already installed: $bin"
     else
-        echo "  [aur] $pkg"
-        yay -S --needed --noconfirm "$pkg"
+        echo "  [cask] $cask_name"
+        brew install --cask "$cask_name"
     fi
 }
-
-# ─── Helper: install via cargo if not present ────────────────────────────────
-crg() {
-    local crate="$1"
-    local bin="${2:-$1}"
-    if has "$bin"; then
-        info "already installed: $bin"
-    else
-        echo "  [cargo] $crate"
-        cargo install "$crate"
-    fi
-}
-
-# ─── System update ───────────────────────────────────────────────────────────
-echo ""
-echo "── System update ──"
-sudo pacman -Syu --noconfirm
 
 # ─── Core shell & build tools ────────────────────────────────────────────────
 echo ""
 echo "── Core shell & build tools ──"
-pac zsh
-pac git
-pac base-devel make
-pac curl
-pac wget
-pac unzip
-pac man-db man
+brw zsh
+brw git
+brw curl
+brw wget
+brw unzip
+$IS_MAC || brw gcc make  # Linux only; macOS ships clang via Xcode CLT
 
 # ─── Oh My Zsh ───────────────────────────────────────────────────────────────
 echo ""
@@ -87,10 +87,9 @@ fi
 # ─── Zsh default shell ───────────────────────────────────────────────────────
 echo ""
 echo "── Default shell ──"
-ZSH_PATH="$(which zsh)"
+ZSH_PATH="$(brew --prefix)/bin/zsh"
 if ! grep -qxF "$ZSH_PATH" /etc/shells; then
     echo "$ZSH_PATH" | sudo tee -a /etc/shells
-    green "  added $ZSH_PATH to /etc/shells"
 fi
 if [ "$SHELL" != "$ZSH_PATH" ]; then
     chsh -s "$ZSH_PATH"
@@ -102,7 +101,7 @@ fi
 # ─── Terminal multiplexer ────────────────────────────────────────────────────
 echo ""
 echo "── Tmux ──"
-pac tmux
+brw tmux
 
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
     git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
@@ -114,10 +113,10 @@ fi
 # ─── Prompt & shell enhancements ─────────────────────────────────────────────
 echo ""
 echo "── Prompt & shell enhancements ──"
-pac starship
-pac fzf
-pac zoxide
-pac atuin
+brw starship
+brw fzf
+brw zoxide
+brw atuin
 
 # fzf-tab (Oh My Zsh plugin)
 FZF_TAB_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fzf-tab"
@@ -140,64 +139,58 @@ fi
 # ─── Editor ──────────────────────────────────────────────────────────────────
 echo ""
 echo "── Neovim ──"
-if ! has nvim; then
-    # Install latest stable from AUR (nvim-git) or official repo
-    yay -S --needed --noconfirm neovim-git
-else
-    info "already installed: nvim"
-fi
+brw neovim nvim
 
 # ─── Modern CLI replacements ─────────────────────────────────────────────────
 echo ""
 echo "── Modern CLI replacements ──"
-pac lsd
-pac bat
-pac ripgrep rg
-pac fd
-pac btop
-aur dust-bin dust
-pac procs
-aur yazi-bin yazi
-aur xh-bin xh
-pac lazygit
-aur gitui gitui
-aur bottom-bin btm
-aur dua-cli dua
-aur skim sk
-pac delta                            # git-delta
-pac hyperfine
-pac tealdeer tldr
-aur watchexec-bin watchexec
-aur topgrade-bin topgrade
+brw lsd
+brw bat
+brw ripgrep rg
+brw fd
+brw btop
+brw dust
+brw procs
+brw yazi
+brw xh
+brw lazygit
+brw gitui
+brw bottom btm
+brw dua-cli dua
+brw sk                          # skim
+brw git-delta delta
+brw hyperfine
+brw tealdeer tldr
+brw watchexec
+brw topgrade
 
-# ─── Git tools ───────────────────────────────────────────────────────────────
+# ─── Git & GitHub tools ──────────────────────────────────────────────────────
 echo ""
 echo "── Git tools ──"
-pac github-cli gh
+brw gh
+brw navi
 
-# ─── Shell history ───────────────────────────────────────────────────────────
+# ─── Navigation & search ─────────────────────────────────────────────────────
 echo ""
-echo "── Navigation & history ──"
-pac navi
-pac jq
-aur yq-go yq
-aur fx
+echo "── Navigation & search ──"
+brw jq
+brw yq
+brw fx
 
 # ─── Runtimes ────────────────────────────────────────────────────────────────
 echo ""
 echo "── Runtimes ──"
 
-# Rust / Cargo
+# Rust
 if ! has cargo; then
-    pac rust cargo
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    . "$HOME/.cargo/env"
 fi
 
 # nvm + Node
 if [ ! -d "$HOME/.nvm" ]; then
-    echo "  [nvm] installing..."
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
-    # shellcheck disable=SC1091
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     nvm install --lts
     green "  nvm + Node LTS installed"
@@ -205,92 +198,80 @@ else
     info "already installed: nvm"
 fi
 
-# Bun
-if ! has bun; then
-    aur bun-bin bun
-fi
+brw bun
+brw pyenv
+brw uv
+brw pipx
+brw mise
 
-# Python / pyenv
-if ! has pyenv; then
-    aur pyenv
-fi
-
-# uv (fast pip/pipx replacement)
-if ! has uv; then
-    aur uv
-fi
-
-# pipx
-if ! has pipx; then
-    pac python-pipx pipx
-fi
-
-# mise (polyglot runtime manager — replaces nvm+pyenv if preferred)
-if ! has mise; then
-    aur mise
-fi
-
-# ─── Productivity tools ───────────────────────────────────────────────────────
+# ─── Productivity ─────────────────────────────────────────────────────────────
 echo ""
 echo "── Productivity ──"
-aur taskwarrior task
-aur timewarrior timew
-aur just
-pac entr
-aur navi
-aur pet-git pet
+brw task taskwarrior
+brw timew timewarrior
+brw just
+brw entr
+brw pet
 
-# ─── Faster alternatives / essentials ────────────────────────────────────────
+# ─── thefuck ─────────────────────────────────────────────────────────────────
 echo ""
-echo "── Essentials ──"
-pac thefuck
-
-# thefuck needs a virtualenv on Arch to avoid polluting system Python
+echo "── thefuck ──"
 if ! has thefuck; then
     python3 -m venv "$HOME/.thefuck-env"
     "$HOME/.thefuck-env/bin/pip" install thefuck
     green "  thefuck installed in ~/.thefuck-env"
+else
+    info "already installed: thefuck"
 fi
 
 # ─── Docker tools ────────────────────────────────────────────────────────────
 echo ""
 echo "── Docker tools ──"
-aur ctop-bin ctop
-aur lazydocker-bin lazydocker
+brw ctop
+brw lazydocker
 
-# ─── Terminal file manager ────────────────────────────────────────────────────
+# ─── TUI tools ───────────────────────────────────────────────────────────────
 echo ""
 echo "── TUI tools ──"
-aur macchina-bin macchina
-aur fastfetch-bin fastfetch
+brw macchina
+brw fastfetch
 
 # ─── Database ────────────────────────────────────────────────────────────────
 echo ""
 echo "── Database ──"
-aur pgcli
+brw pgcli
 
 # ─── Notes & knowledge ───────────────────────────────────────────────────────
 echo ""
 echo "── Notes & knowledge ──"
-aur nb
-aur dnote-bin dnote
+brw nb
+brw dnote
 
-# ─── Remote & SSH ────────────────────────────────────────────────────────────
+# ─── Remote ──────────────────────────────────────────────────────────────────
 echo ""
 echo "── Remote ──"
-pac mosh
-aur tmate
+brw mosh
+brw tmate
 
 # ─── Misc utilities ──────────────────────────────────────────────────────────
 echo ""
 echo "── Misc utilities ──"
-aur has
-pac kalker
-aur atac-bin atac
-aur posting posting
-aur gdu-go gdu
-aur mani
-pac lychee
+brw kalker
+brw atac
+brw posting
+brw gdu
+brw lychee
+brw mani
+
+# ─── macOS extras ────────────────────────────────────────────────────────────
+if $IS_MAC; then
+    echo ""
+    echo "── macOS extras ──"
+    # pbcopy/pbpaste are built-in on macOS — no install needed
+    # Prefer GNU coreutils for script compatibility
+    brw coreutils
+    brw gnu-sed gsed
+fi
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 echo ""
