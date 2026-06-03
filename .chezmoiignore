@@ -33,3 +33,6 @@ nvim/
 # ─── Nix manager (referenced by nix/install.sh, not a home dotfile directly) ─
 # Will be moved to dot_config/nix-manager/ in step 2 — until then, ignore
 nix-manager/
+
+# ─── Work-specific systemd services (not present on all machines) ─────────────
+systemd/
