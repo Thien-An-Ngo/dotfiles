@@ -1,7 +1,7 @@
 # --- Tmux autostart ---
 # Attach to existing "main" session or create a new one.
 # Skips if already inside tmux, non-interactive, or running in VSCode.
-{{- if ne .chezmoidata.machine "server" }}
+{{- if ne .machine "server" }}
 if [ -z "$TMUX" ] && [ -t 0 ] && [ "$TERM_PROGRAM" != "vscode" ]; then
     exec tmux new-session -A -s main
 fi
@@ -69,16 +69,16 @@ alias glog='git log --oneline --graph --decorate'
 alias ff=fastfetch
 
 # ── WSL-specific ──────────────────────────────────────────────────────────────
-{{- if .chezmoidata.wsl }}
+{{- if .wsl }}
 alias pbcopy='clip.exe'
 alias pbpaste='powershell.exe -command Get-Clipboard'
 
 fclip() { cat "$1" | clip.exe; }
 {{- end }}
 
-{{- if and .chezmoidata.wsl .chezmoidata.work }}
+{{- if and .wsl .work }}
 agy() {
-  local AG_EXE="/mnt/c/Users/{{ .chezmoidata.windowsUser }}/AppData/Local/Programs/Antigravity/bin/antigravity"
+  local AG_EXE="/mnt/c/Users/{{ .windowsUser }}/AppData/Local/Programs/Antigravity/bin/antigravity"
   "$AG_EXE" --remote wsl+"$WSL_DISTRO_NAME" "$(readlink -f "${1:-.}")"
 }
 {{- end }}
@@ -102,16 +102,16 @@ export PATH="{{ .chezmoi.homeDir }}/.local/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/.cargo/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/.bun/bin:$PATH"
 
-{{- if .chezmoidata.work }}
+{{- if .work }}
 export PATH="{{ .chezmoi.homeDir }}/.lando/bin:$PATH"
 export devteam="{{ .chezmoi.homeDir }}/workspace/dev_team.sh"
 export ENCORE_INSTALL="{{ .chezmoi.homeDir }}/.encore"
 export PATH="$ENCORE_INSTALL/bin:$PATH"
 {{- end }}
 
-{{- if .chezmoidata.wsl }}
+{{- if .wsl }}
 export PATH="$PATH:/opt/mssql-tools18/bin"
-export PATH="$PATH:/mnt/c/Users/{{ .chezmoidata.windowsUser }}/AppData/Local/Programs/cursor/resources/app/bin"
+export PATH="$PATH:/mnt/c/Users/{{ .windowsUser }}/AppData/Local/Programs/cursor/resources/app/bin"
 {{- end }}
 
 {{- if eq .chezmoi.os "linux" }}
@@ -152,7 +152,7 @@ command -v navi   &>/dev/null && eval "$(navi widget zsh)"
 command -v atuin  &>/dev/null && eval "$(atuin init zsh)"
 
 # ── Work-specific ─────────────────────────────────────────────────────────────
-{{- if .chezmoidata.work }}
+{{- if .work }}
 [ -f "{{ .chezmoi.homeDir }}/.openclaw/completions/openclaw.zsh" ] && \
   source "{{ .chezmoi.homeDir }}/.openclaw/completions/openclaw.zsh"
 {{- end }}

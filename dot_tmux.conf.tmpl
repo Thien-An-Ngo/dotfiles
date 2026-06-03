@@ -68,7 +68,7 @@ bind z resize-pane -Z
 setw -g mode-keys vi
 bind Enter copy-mode
 bind -T copy-mode-vi v send -X begin-selection
-{{- if .chezmoidata.wsl }}
+{{- if .wsl }}
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel "clip.exe"
 {{- else if eq .chezmoi.os "darwin" }}
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel "pbcopy"
