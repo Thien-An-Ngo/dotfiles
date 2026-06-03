@@ -4,12 +4,15 @@
       (list "archwsl" "arch" "ubuntu" "mac" "nixos" "server") -}}
 {{- $wsl     := promptBoolOnce . "wsl"  "Running inside WSL2" -}}
 {{- $work    := promptBoolOnce . "work" "Work machine" -}}
-{{- $categories   := promptStringOnce . "categories"   "Package categories to install (core,cli,shell,tui,runtimes,productivity,remote,db,utils)" -}}
+{{- $categories   := promptStringOnce . "categories"   "Package categories (core,cli,shell,tui,runtimes,productivity,remote,db,utils)" -}}
 {{- $ageRecipient := promptStringOnce . "ageRecipient" "Age public key for encryption (leave blank to skip)" -}}
 {{- $windowsUser := "" -}}
 {{- if $wsl -}}
 {{-   $windowsUser = promptStringOnce . "windowsUser" "Windows username (for WSL paths, e.g. JohnDoe)" -}}
 {{- end -}}
+
+[chezmoi]
+    sourceDir = "{{ .chezmoi.homeDir }}/.local/share/chezmoi/home"
 
 [data]
     name         = {{ $name         | quote }}
