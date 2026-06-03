@@ -1,0 +1,21 @@
+{{- $name    := promptStringOnce . "name"    "Full name" -}}
+{{- $email   := promptStringOnce . "email"   "Email address" -}}
+{{- $machine := promptChoiceOnce . "machine" "Machine type"
+      (list "archwsl" "arch" "ubuntu" "mac" "nixos" "server") -}}
+{{- $wsl     := promptBoolOnce . "wsl"  "Running inside WSL2" -}}
+{{- $work    := promptBoolOnce . "work" "Work machine" -}}
+{{- $windowsUser := "" -}}
+{{- if $wsl -}}
+{{-   $windowsUser = promptStringOnce . "windowsUser" "Windows username (for WSL paths, e.g. JohnDoe)" -}}
+{{- end -}}
+
+[chezmoi]
+    sourceDir = "{{ .chezmoi.homeDir }}/.local/share/chezmoi"
+
+[data]
+    name        = {{ $name        | quote }}
+    email       = {{ $email       | quote }}
+    machine     = {{ $machine     | quote }}
+    wsl         = {{ $wsl }}
+    work        = {{ $work }}
+    windowsUser = {{ $windowsUser | quote }}

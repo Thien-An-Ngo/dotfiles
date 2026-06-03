@@ -68,7 +68,13 @@ bind z resize-pane -Z
 setw -g mode-keys vi
 bind Enter copy-mode
 bind -T copy-mode-vi v send -X begin-selection
-bind -T copy-mode-vi y send -X copy-pipe-and-cancel "clip.exe"  # WSL clipboard
+{{- if .chezmoidata.wsl }}
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel "clip.exe"
+{{- else if eq .chezmoi.os "darwin" }}
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel "pbcopy"
+{{- else }}
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel "wl-copy 2>/dev/null || xclip -selection clipboard"
+{{- end }}
 bind -T copy-mode-vi Escape send -X cancel
 bind -T copy-mode-vi H send -X start-of-line
 bind -T copy-mode-vi L send -X end-of-line
@@ -114,13 +120,13 @@ set -g status-right-length 120
  set -g status-style "bg=default"
 
 # LEFT: session pill (purple) + PREFIX pill (peach) when active
-set -g status-left "#[fg=#9A348E,bg=default]#[fg=#f8f8f2]#[bg=#9A348E]#[bold] 󰌌 #S #{?client_prefix,#[fg=#9A348E]#[bg=#FCA17D]#[fg=#9A348E]#[bg=#FCA17D]#[bold] ⌨ PREFIX #[fg=#FCA17D]#[bg=default],#[fg=#9A348E]#[bg=default]}#[default] "
+set -g status-left "#[fg=#9A348E,bg=default]#[fg=#f8f8f2]#[bg=#9A348E]#[bold] 󰌌 #S #{?client_prefix,#[fg=#9A348E]#[bg=#FCA17D]#[fg=#9A348E]#[bg=#FCA17D]#[bold] ⌨ PREFIX #[fg=#FCA17D]#[bg=default],#[fg=#9A348E]#[bg=default]}#[default] "
 
 # WINDOW TABS — inactive: muted rounded pill
-setw -g window-status-format "#[fg=#44475a,bg=default]#[fg=#6272a4,bg=#44475a] #I #[fg=#f8f8f2,bg=#44475a]#W #[fg=#44475a,bg=default]"
+setw -g window-status-format "#[fg=#44475a,bg=default]#[fg=#6272a4,bg=#44475a] #I #[fg=#f8f8f2,bg=#44475a]#W #[fg=#44475a,bg=default]"
 
 # WINDOW TABS — active: salmon -> peach rounded pill
-setw -g window-status-current-format "#[fg=#DA627D,bg=default]#[fg=#f8f8f2,bg=#DA627D,bold] #I #[fg=#DA627D,bg=#FCA17D]#[fg=#f8f8f2,bg=#FCA17D,bold] #W#{?window_zoomed_flag, 󰊓,} #[fg=#FCA17D,bg=default]"
+setw -g window-status-current-format "#[fg=#DA627D,bg=default]#[fg=#f8f8f2,bg=#DA627D,bold] #I #[fg=#DA627D,bg=#FCA17D]#[fg=#f8f8f2,bg=#FCA17D,bold] #W#{?window_zoomed_flag, 󰊓,} #[fg=#FCA17D,bg=default]"
 
 setw -g window-status-separator " "
 
@@ -130,24 +136,21 @@ set -g status-format[0] "#[bg=default,fg=default]"
 set -g status-format[1] "#[align=left range=left #{E:status-left-style}]#[push-default]#{T;=/#{status-left-length}:status-left}#[pop-default]#[norange default]#[list=on align=#{status-justify}]#[list=left-marker]<#[list=right-marker]>#[list=on]#{W:#[range=window|#{window_index} #{E:window-status-style}#{?#{&&:#{window_last_flag},#{!=:#{E:window-status-last-style},default}}, #{E:window-status-last-style},}#{?#{&&:#{window_bell_flag},#{!=:#{E:window-status-bell-style},default}}, #{E:window-status-bell-style},#{?#{&&:#{||:#{window_activity_flag},#{window_silence_flag}},#{!=:#{E:window-status-activity-style},default}}, #{E:window-status-activity-style},}}]#[push-default]#{T:window-status-format}#[pop-default]#[norange default]#{?window_end_flag,,#{window-status-separator}},#[range=window|#{window_index} list=focus #{?#{!=:#{E:window-status-current-style},default},#{E:window-status-current-style},#{E:window-status-style}}#{?#{&&:#{window_last_flag},#{!=:#{E:window-status-last-style},default}}, #{E:window-status-last-style},}#{?#{&&:#{window_bell_flag},#{!=:#{E:window-status-bell-style},default}}, #{E:window-status-bell-style},#{?#{&&:#{||:#{window_activity_flag},#{window_silence_flag}},#{!=:#{E:window-status-activity-style},default}}, #{E:window-status-activity-style},}}]#[push-default]#{T:window-status-current-format}#[pop-default]#[norange list=on default]#{?window_end_flag,,#{window-status-separator}}}#[nolist align=right range=right #{E:status-right-style}]#[push-default]#{T;=/#{status-right-length}:status-right}#[pop-default]#[norange default]"
 
 # RIGHT: steel -> teal -> navy (matches starship language/docker/time)
-set -g status-right "#[fg=#86BBD8,bg=default]#[fg=#21222c,bg=#86BBD8] 󰥔 %H:%M #[fg=#86BBD8,bg=#06969A]#[fg=#f8f8f2,bg=#06969A] 󰃭 %d.%m.%y #[fg=#06969A,bg=#33658A]#[fg=#f8f8f2,bg=#33658A,bold]  #H #[fg=#33658A,bg=default]"
+set -g status-right "#[fg=#86BBD8,bg=default]#[fg=#21222c,bg=#86BBD8] 󰥔 %H:%M #[fg=#86BBD8,bg=#06969A]#[fg=#f8f8f2,bg=#06969A] 󰃭 %d.%m.%y #[fg=#06969A,bg=#33658A]#[fg=#f8f8f2,bg=#33658A,bold]  #H #[fg=#33658A,bg=default]"
 
 # ============================================================
-# PLUGINS (TPM)
-# Install: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-# Then press Prefix + I to install
+# PLUGINS (TPM — managed by chezmoi externals)
+# Press Prefix + I to install after first apply
 # ============================================================
 
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'tmux-plugins/tmux-resurrect'    # Save/restore sessions
-set -g @plugin 'tmux-plugins/tmux-continuum'    # Auto-save sessions
-set -g @plugin 'tmux-plugins/tmux-yank'         # Better clipboard
-set -g @plugin 'christoomey/vim-tmux-navigator' # Seamless vim/tmux nav
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'christoomey/vim-tmux-navigator'
 
-# Plugin settings
 set -g @continuum-restore 'on'
 set -g @resurrect-capture-pane-contents 'on'
 
-# Initialize TPM (keep at bottom)
 run '~/.tmux/plugins/tpm/tpm'
