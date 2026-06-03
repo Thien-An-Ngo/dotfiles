@@ -22,6 +22,14 @@ windows/
 # ─── Shared scripts (called by run_once, not dotfiles) ───────────────────────
 scripts/
 
+# ─── Install scripts at root (not dotfiles) ──────────────────────────────────
+arch-install.sh
+apt-install.sh
+brew-install.sh
+nix-install.sh
+install.sh
+dot_zshrc.local.example
+
 # ─── Chezmoi machine-local config ────────────────────────────────────────────
 # chezmoi/chezmoi.toml is gitignored above; this guards against it
 # accidentally appearing to chezmoi as a managed file

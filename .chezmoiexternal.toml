@@ -1,0 +1,29 @@
+# chezmoi externals — cloned once on `chezmoi apply`, kept up-to-date on `chezmoi update`
+
+# ── Oh My Zsh ────────────────────────────────────────────────────────────────
+[".oh-my-zsh"]
+    type    = "git-repo"
+    url     = "https://github.com/ohmyzsh/ohmyzsh.git"
+    clone.args   = ["--depth", "1"]
+    pull.args    = ["--ff-only"]
+
+# ── fzf-tab ───────────────────────────────────────────────────────────────────
+[".oh-my-zsh/custom/plugins/fzf-tab"]
+    type    = "git-repo"
+    url     = "https://github.com/Aloxaf/fzf-tab.git"
+    clone.args   = ["--depth", "1"]
+    pull.args    = ["--ff-only"]
+
+# ── forgit ────────────────────────────────────────────────────────────────────
+[".oh-my-zsh/custom/plugins/forgit"]
+    type    = "git-repo"
+    url     = "https://github.com/wfxr/forgit.git"
+    clone.args   = ["--depth", "1"]
+    pull.args    = ["--ff-only"]
+
+# ── TPM (Tmux Plugin Manager) ─────────────────────────────────────────────────
+[".tmux/plugins/tpm"]
+    type    = "git-repo"
+    url     = "https://github.com/tmux-plugins/tpm.git"
+    clone.args   = ["--depth", "1"]
+    pull.args    = ["--ff-only"]
