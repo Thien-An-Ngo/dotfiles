@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DOTFILES="{{ .chezmoi.sourceDir }}/.."
+DOTFILES="{{ .chezmoi.sourceDir }}"
 CATEGORIES="{{ .categories | default "core,cli,shell" }}"
 
 {{- if eq .machine "server" }}
