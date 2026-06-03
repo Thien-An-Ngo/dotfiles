@@ -41,3 +41,7 @@ home/.env.*
 home/.zsh_history
 home/.bash_history
 home/.zshrc.local
+
+# ─── Nix vars ────────────────────────────────────────────────────────────────
+# nixos/vars.nix is intentionally committed (personal dotfiles repo).
+# Fork → run ./confninit.sh → commit your own vars.nix.

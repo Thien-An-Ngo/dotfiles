@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, vars, ... }:
 {
   imports = [
     ./shell.nix
@@ -8,8 +8,8 @@
     ./services.nix
   ];
 
-  home.username    = "thienan";
-  home.homeDirectory = "/home/thienan";
+  home.username      = vars.username;
+  home.homeDirectory = vars.homeDir;
   home.stateVersion  = "24.11";
 
   programs.home-manager.enable = true;

@@ -1,0 +1,7 @@
+# Copy this to vars.nix and fill in your values, or run ./confninit.sh
+{
+  username = "YOUR_USERNAME";      # output of: whoami
+  fullName = "Your Full Name";     # git commit author name
+  email    = "you@example.com";    # git commit author email
+  homeDir  = "/home/YOUR_USERNAME"; # output of: echo $HOME
+}

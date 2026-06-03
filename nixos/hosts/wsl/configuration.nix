@@ -1,9 +1,9 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, vars, ... }:
 {
   # ── WSL2 integration ──────────────────────────────────────────────────
   wsl = {
     enable      = true;
-    defaultUser = "thienan";
+    defaultUser = vars.username;
     # Expose Windows Start Menu entries for Linux GUI apps
     startMenuLaunchers = true;
     # Interop: run .exe helpers (clip.exe, powershell.exe, etc.)
@@ -11,7 +11,7 @@
   };
 
   # ── User ──────────────────────────────────────────────────────────────
-  users.users.thienan = {
+  users.users.${vars.username} = {
     isNormalUser = true;
     shell        = pkgs.zsh;
     extraGroups  = [ "wheel" "docker" ];

@@ -1,9 +1,9 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, vars, ... }:
 {
   programs.git = {
     enable    = true;
-    userName  = "Thien-An Ngo";
-    userEmail = "tha.ngo@icloud.com";
+    userName  = vars.fullName;
+    userEmail = vars.email;
 
     # delta as pager
     delta = {
