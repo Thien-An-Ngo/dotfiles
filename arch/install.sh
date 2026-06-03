@@ -226,6 +226,8 @@ fi
 if has_cat utils; then
     echo ""
     echo "── Misc utilities ──"
+    pac wl-clipboard wl-copy
+    pac xclip
     aur atac-bin atac
     aur posting posting
     aur gdu-go gdu

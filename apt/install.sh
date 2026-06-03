@@ -431,6 +431,8 @@ fi
 if has_cat utils; then
     echo ""
     echo "── Misc utilities ──"
+    apt_pkg wl-clipboard wl-copy
+    apt_pkg xclip
 
     # kalker
     crg kalker
