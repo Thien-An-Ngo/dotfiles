@@ -2,8 +2,10 @@
 # ~/.tmux.conf — Pastel Powerline Theme, German Keyboard
 # ============================================================
 
+{{- if ne .machine "server" }}
 # --- Fastfetch on new session ---
 set-hook -g after-new-session 'send-keys "fastfetch" Enter'
+{{- end }}
 
 # --- Core ---
 set -g default-terminal "tmux-256color"
@@ -138,6 +140,7 @@ set -g status-format[1] "#[align=left range=left #{E:status-left-style}]#[push-d
 # RIGHT: steel -> teal -> navy (matches starship language/docker/time)
 set -g status-right "#[fg=#86BBD8,bg=default]#[fg=#21222c,bg=#86BBD8] 󰥔 %H:%M #[fg=#86BBD8,bg=#06969A]#[fg=#f8f8f2,bg=#06969A] 󰃭 %d.%m.%y #[fg=#06969A,bg=#33658A]#[fg=#f8f8f2,bg=#33658A,bold]  #H #[fg=#33658A,bg=default]"
 
+{{- if ne .machine "server" }}
 # ============================================================
 # PLUGINS (TPM — managed by chezmoi externals)
 # Press Prefix + I to install after first apply
@@ -154,3 +157,4 @@ set -g @continuum-restore 'on'
 set -g @resurrect-capture-pane-contents 'on'
 
 run '~/.tmux/plugins/tpm/tpm'
+{{- end }}

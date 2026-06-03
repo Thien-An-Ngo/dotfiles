@@ -7,6 +7,7 @@ if [ -z "$TMUX" ] && [ -t 0 ] && [ "$TERM_PROGRAM" != "vscode" ]; then
 fi
 {{- end }}
 
+{{- if ne .machine "server" }}
 export ZSH="{{ .chezmoi.homeDir }}/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
@@ -23,8 +24,12 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*'        fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
 zstyle ':fzf-tab:*' fzf-flags --color='hl:#9A348E,hl+:#DA627D'
+{{- else }}
+autoload -Uz compinit && compinit
+{{- end }}
 
 # ── Better tool defaults ──────────────────────────────────────────────────────
+{{- if ne .machine "server" }}
 command -v lsd      &>/dev/null && alias ls='lsd'
 command -v lsd      &>/dev/null && alias ll='lsd -la'
 command -v lsd      &>/dev/null && alias lt='lsd --tree'
@@ -44,10 +49,13 @@ command -v uv       &>/dev/null && alias pip='uv pip' && alias pipx='uv tool'
 command -v watchexec &>/dev/null && alias watch='watchexec'
 command -v topgrade &>/dev/null && alias upgrade='topgrade'
 command -v jq       &>/dev/null && alias jq='jq --tab'
+{{- end }}
 command -v pacman   &>/dev/null && alias pacman='sudo pacman --noconfirm'
 
 # ── Navigation ────────────────────────────────────────────────────────────────
+{{- if ne .machine "server" }}
 alias cd='z'
+{{- end }}
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -66,7 +74,9 @@ alias tmuxrc='${EDITOR:-nvim} ~/.tmux.conf'
 # ── Git shortcuts ─────────────────────────────────────────────────────────────
 alias g='git'
 alias glog='git log --oneline --graph --decorate'
+{{- if ne .machine "server" }}
 alias ff=fastfetch
+{{- end }}
 
 # ── Clipboard ────────────────────────────────────────────────────────────────
 {{- if .wsl }}
@@ -111,8 +121,10 @@ export FZF_DEFAULT_OPTS='
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
 export PATH="{{ .chezmoi.homeDir }}/.local/bin:$PATH"
+{{- if ne .machine "server" }}
 export PATH="{{ .chezmoi.homeDir }}/.cargo/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/.bun/bin:$PATH"
+{{- end }}
 
 {{- if .work }}
 export PATH="{{ .chezmoi.homeDir }}/.lando/bin:$PATH"
@@ -131,6 +143,7 @@ export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 export PATH="$PATH:/opt/nvim"
 {{- end }}
 
+{{- if ne .machine "server" }}
 # ── thefuck ───────────────────────────────────────────────────────────────────
 [ -d "{{ .chezmoi.homeDir }}/.thefuck-env" ] && export PATH="{{ .chezmoi.homeDir }}/.thefuck-env/bin:$PATH"
 command -v thefuck &>/dev/null && eval "$(thefuck --alias fuck)"
@@ -156,12 +169,15 @@ fi
 autoload -U bashcompinit
 bashcompinit
 command -v register-python-argcomplete &>/dev/null && eval "$(register-python-argcomplete pipx)"
+{{- end }}
 
 # ── Shell integrations (order matters — atuin wins Ctrl+R last) ───────────────
 eval "$(starship init zsh)"
+{{- if ne .machine "server" }}
 eval "$(zoxide init zsh)"
 command -v navi   &>/dev/null && eval "$(navi widget zsh)"
 command -v atuin  &>/dev/null && eval "$(atuin init zsh)"
+{{- end }}
 
 # ── Work-specific ─────────────────────────────────────────────────────────────
 {{- if .work }}
