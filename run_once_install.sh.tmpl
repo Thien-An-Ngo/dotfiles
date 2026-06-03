@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES="{{ .chezmoi.sourceDir }}"
+CATEGORIES="{{ .categories | default "core,cli,shell" }}"
+
+{{- if eq .machine "server" }}
+CATEGORIES="core"
+{{- end }}
+
+echo ""
+echo "═══════════════════════════════════════════════"
+echo " Installing packages for: {{ .machine }}"
+echo " Categories: $CATEGORIES"
+echo "═══════════════════════════════════════════════"
+
+{{- if eq .chezmoi.os "linux" }}
+{{- $id     := .chezmoi.osRelease.id     | default "" }}
+{{- $idLike := .chezmoi.osRelease.idLike | default "" }}
+
+{{- if or (eq $id "arch") (contains "arch" $idLike) }}
+bash "$DOTFILES/arch/install.sh" --categories "$CATEGORIES"
+{{- else if or (eq $id "ubuntu") (eq $id "debian") (contains "debian" $idLike) }}
+bash "$DOTFILES/apt/install.sh" --categories "$CATEGORIES"
+{{- else if eq $id "nixos" }}
+echo "NixOS detected — run nixos-rebuild switch manually."
+{{- else }}
+echo "Unknown Linux distro. Run the appropriate installer from $DOTFILES manually."
+{{- end }}
+
+{{- else if eq .chezmoi.os "darwin" }}
+bash "$DOTFILES/brew/install.sh" --categories "$CATEGORIES"
+
+{{- else if eq .chezmoi.os "windows" }}
+powershell -ExecutionPolicy Bypass -File "$DOTFILES/windows/install.ps1" -Categories "$CATEGORIES"
+
+{{- else }}
+echo "Unsupported OS: {{ .chezmoi.os }}"
+{{- end }}

@@ -22,6 +22,8 @@ windows/
 # ─── Shared scripts (called by run_once, not dotfiles) ───────────────────────
 scripts/
 
+dot_zshrc.local.example
+
 # ─── Chezmoi machine-local config ────────────────────────────────────────────
 # chezmoi/chezmoi.toml is gitignored above; this guards against it
 # accidentally appearing to chezmoi as a managed file
@@ -32,3 +34,16 @@ nvim/
 
 # ─── Chezmoi config dir (machine-local, gitignored) ──────────────────────────
 chezmoi/
+
+# ─── Windows-only run_once script — skip on non-Windows ──────────────────────
+{{- if ne .chezmoi.os "windows" }}
+run_once_windows-setup.ps1.tmpl
+{{- end }}
+
+# ─── Unix-only dotfiles — skip on Windows ────────────────────────────────────
+{{- if eq .chezmoi.os "windows" }}
+dot_zshrc.tmpl
+dot_zprofile.tmpl
+dot_zshenv
+dot_tmux.conf.tmpl
+{{- end }}

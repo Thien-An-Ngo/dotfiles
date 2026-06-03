@@ -41,6 +41,10 @@ systemd/
 # ─── Chezmoi machine-local config (never committed — contains sourceDir + age key path) ──
 chezmoi/chezmoi.toml
 
+# ─── Claude Code local settings (machine-specific) ───────────────────────────
+.claude/settings.local.json
+.claude/worktrees/
+
 # ─── Secrets / sensitive ─────────────────────────────────────────────────────
 .env
 .env.*
