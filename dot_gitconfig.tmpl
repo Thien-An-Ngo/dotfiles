@@ -1,12 +1,12 @@
 [user]
-	email = tha.ngo@icloud.com
-	name = Thien-An Ngo
+	email = {{ .chezmoidata.email }}
+	name  = {{ .chezmoidata.name }}
 [credential "https://github.com"]
 	helper =
-	helper = !/usr/bin/gh auth git-credential
+	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
 	helper =
-	helper = !/usr/bin/gh auth git-credential
+	helper = !gh auth git-credential
 [init]
 	defaultBranch = main
 [core]

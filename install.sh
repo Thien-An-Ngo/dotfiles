@@ -88,6 +88,10 @@ check tmux
 # editors
 check nvim
 
+# runtimes
+check cargo
+check rustup
+
 # modern CLI replacements
 check lsd
 check bat

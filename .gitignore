@@ -18,26 +18,32 @@ encore/
 mimeapps.list
 
 # ─── Poetry project files (not user config) ──────────────────────────────────
-pypoetry/poetry.lock
-pypoetry/pyproject.toml
+dot_config/pypoetry/poetry.lock
+dot_config/pypoetry/pyproject.toml
 
 # ─── gh auth tokens ──────────────────────────────────────────────────────────
-gh/hosts.yml
+dot_config/gh/hosts.yml
 
 # ─── Micro editor state ──────────────────────────────────────────────────────
-micro/backups/
-micro/buffers/
+dot_config/micro/backups/
+dot_config/micro/buffers/
 
 # ─── thefuck compiled cache ──────────────────────────────────────────────────
-thefuck/__pycache__/
+dot_config/thefuck/__pycache__/
+
+# ─── systemd (work-specific, machine-generated — never commit) ────────────────
+systemd/
 
 # ─── Backups created by install.sh ───────────────────────────────────────────
 *.bak
 .dotfiles-backup-*/
 
+# ─── Chezmoi machine-local config (never committed — contains sourceDir + age key path) ──
+chezmoi/chezmoi.toml
+
 # ─── Secrets / sensitive ─────────────────────────────────────────────────────
-home/.env
-home/.env.*
-home/.zsh_history
-home/.bash_history
-home/.zshrc.local
+.env
+.env.*
+.zsh_history
+.bash_history
+.zshrc.local

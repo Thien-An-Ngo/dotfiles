@@ -1,0 +1,161 @@
+# --- Tmux autostart ---
+# Attach to existing "main" session or create a new one.
+# Skips if already inside tmux, non-interactive, or running in VSCode.
+{{- if ne .chezmoidata.machine "server" }}
+if [ -z "$TMUX" ] && [ -t 0 ] && [ "$TERM_PROGRAM" != "vscode" ]; then
+    exec tmux new-session -A -s main
+fi
+{{- end }}
+
+export ZSH="{{ .chezmoi.homeDir }}/.oh-my-zsh"
+
+ZSH_THEME="robbyrussell"
+
+plugins=(git pyenv docker bun rust npm fzf-tab forgit)
+
+fpath+={{ .chezmoi.homeDir }}/.zfunc
+autoload -Uz compinit && compinit
+
+source $ZSH/oh-my-zsh.sh
+
+# fzf-tab — replace zsh completion menu with fzf
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*'        fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'lsd --color=always $realpath 2>/dev/null || ls --color=always $realpath'
+zstyle ':fzf-tab:*' fzf-flags --color='hl:#9A348E,hl+:#DA627D'
+
+# ── Better tool defaults ──────────────────────────────────────────────────────
+command -v lsd      &>/dev/null && alias ls='lsd'
+command -v lsd      &>/dev/null && alias ll='lsd -la'
+command -v lsd      &>/dev/null && alias lt='lsd --tree'
+command -v bat      &>/dev/null && alias cat='bat'
+command -v rg       &>/dev/null && alias grep='rg'
+command -v fd       &>/dev/null && alias find='fd'
+command -v btm      &>/dev/null && alias top='btm'   || { command -v btop &>/dev/null && alias top='btop'; }
+command -v dua      &>/dev/null && alias du='dua'    || { command -v dust &>/dev/null && alias du='dust'; }
+command -v procs    &>/dev/null && alias ps='procs'
+command -v yazi     &>/dev/null && alias y='yazi'
+command -v xh       &>/dev/null && alias http='xh'
+command -v macchina &>/dev/null && alias sysinfo='macchina'
+command -v tldr     &>/dev/null && alias help='tldr'
+command -v gitui    &>/dev/null && alias gu='gitui'
+command -v hyperfine &>/dev/null && alias bench='hyperfine'
+command -v uv       &>/dev/null && alias pip='uv pip' && alias pipx='uv tool'
+command -v watchexec &>/dev/null && alias watch='watchexec'
+command -v topgrade &>/dev/null && alias upgrade='topgrade'
+command -v jq       &>/dev/null && alias jq='jq --tab'
+command -v pacman   &>/dev/null && alias pacman='sudo pacman --noconfirm'
+
+# ── Navigation ────────────────────────────────────────────────────────────────
+alias cd='z'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# ── Tmux shortcuts ────────────────────────────────────────────────────────────
+alias ta='tmux attach -t'
+alias tn='tmux new -s'
+alias tl='tmux ls'
+alias tk='tmux kill-session -t'
+
+# ── Quick config edits ────────────────────────────────────────────────────────
+alias zshrc='${EDITOR:-nvim} ~/.zshrc'
+alias vimrc='${EDITOR:-nvim} ~/.config/nvim/init.lua'
+alias tmuxrc='${EDITOR:-nvim} ~/.tmux.conf'
+
+# ── Git shortcuts ─────────────────────────────────────────────────────────────
+alias g='git'
+alias glog='git log --oneline --graph --decorate'
+alias ff=fastfetch
+
+# ── WSL-specific ──────────────────────────────────────────────────────────────
+{{- if .chezmoidata.wsl }}
+alias pbcopy='clip.exe'
+alias pbpaste='powershell.exe -command Get-Clipboard'
+
+fclip() { cat "$1" | clip.exe; }
+{{- end }}
+
+{{- if and .chezmoidata.wsl .chezmoidata.work }}
+agy() {
+  local AG_EXE="/mnt/c/Users/{{ .chezmoidata.windowsUser }}/AppData/Local/Programs/Antigravity/bin/antigravity"
+  "$AG_EXE" --remote wsl+"$WSL_DISTRO_NAME" "$(readlink -f "${1:-.}")"
+}
+{{- end }}
+
+# ── FZF ───────────────────────────────────────────────────────────────────────
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git 2>/dev/null || find . -type f'
+export FZF_DEFAULT_OPTS='
+  --color=fg:#f8f8f2,bg:#21222c,hl:#9A348E
+  --color=fg+:#f8f8f2,bg+:#44475a,hl+:#DA627D
+  --color=info:#FCA17D,prompt:#DA627D,pointer:#9A348E
+  --color=marker:#86BBD8,spinner:#FCA17D,header:#6272a4
+  --height 40% --border --reverse
+'
+[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && \
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+[ -f /usr/share/doc/fzf/examples/completion.zsh ] && \
+  source /usr/share/doc/fzf/examples/completion.zsh
+
+# ── PATH ──────────────────────────────────────────────────────────────────────
+export PATH="{{ .chezmoi.homeDir }}/.local/bin:$PATH"
+export PATH="{{ .chezmoi.homeDir }}/.cargo/bin:$PATH"
+export PATH="{{ .chezmoi.homeDir }}/.bun/bin:$PATH"
+
+{{- if .chezmoidata.work }}
+export PATH="{{ .chezmoi.homeDir }}/.lando/bin:$PATH"
+export devteam="{{ .chezmoi.homeDir }}/workspace/dev_team.sh"
+export ENCORE_INSTALL="{{ .chezmoi.homeDir }}/.encore"
+export PATH="$ENCORE_INSTALL/bin:$PATH"
+{{- end }}
+
+{{- if .chezmoidata.wsl }}
+export PATH="$PATH:/opt/mssql-tools18/bin"
+export PATH="$PATH:/mnt/c/Users/{{ .chezmoidata.windowsUser }}/AppData/Local/Programs/cursor/resources/app/bin"
+{{- end }}
+
+{{- if eq .chezmoi.os "linux" }}
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+export PATH="$PATH:/opt/nvim"
+{{- end }}
+
+# ── thefuck ───────────────────────────────────────────────────────────────────
+[ -d "{{ .chezmoi.homeDir }}/.thefuck-env" ] && export PATH="{{ .chezmoi.homeDir }}/.thefuck-env/bin:$PATH"
+command -v thefuck &>/dev/null && eval "$(thefuck --alias fuck)"
+
+# ── Bun ───────────────────────────────────────────────────────────────────────
+export BUN_INSTALL="{{ .chezmoi.homeDir }}/.bun"
+[ -s "{{ .chezmoi.homeDir }}/.bun/_bun" ] && source "{{ .chezmoi.homeDir }}/.bun/_bun"
+
+# ── NVM (lazy-loaded) ─────────────────────────────────────────────────────────
+export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"
+else
+  nvm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; nvm  "$@"; }
+  node() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; node "$@"; }
+  npm()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npm  "$@"; }
+  npx()  { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; npx  "$@"; }
+  yarn() { unset -f nvm node npm npx yarn; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; yarn "$@"; }
+fi
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+
+# ── pipx ─────────────────────────────────────────────────────────────────────
+autoload -U bashcompinit
+bashcompinit
+command -v register-python-argcomplete &>/dev/null && eval "$(register-python-argcomplete pipx)"
+
+# ── Shell integrations (order matters — atuin wins Ctrl+R last) ───────────────
+eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
+command -v navi   &>/dev/null && eval "$(navi widget zsh)"
+command -v atuin  &>/dev/null && eval "$(atuin init zsh)"
+
+# ── Work-specific ─────────────────────────────────────────────────────────────
+{{- if .chezmoidata.work }}
+[ -f "{{ .chezmoi.homeDir }}/.openclaw/completions/openclaw.zsh" ] && \
+  source "{{ .chezmoi.homeDir }}/.openclaw/completions/openclaw.zsh"
+{{- end }}
+
+# ── Machine-local overrides (never committed) ─────────────────────────────────
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
