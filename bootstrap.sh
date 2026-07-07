@@ -110,11 +110,12 @@ if [ "${SSH_CHOICE:-n}" = "y" ] || [ "${SSH_CHOICE:-n}" = "Y" ]; then
     ask "  Press Enter once you've added the key..."
     read -r
 
-    # Test connection
+    # Test connection — GitHub exits 1 even on success, output goes to stderr
     bold "  Testing GitHub SSH connection..."
     TRIES=0
     while [ $TRIES -lt 5 ]; do
-        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        SSH_OUT="$(ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 || true)"
+        if echo "$SSH_OUT" | grep -q "successfully authenticated"; then
             green "  SSH connection confirmed"
             break
         fi
