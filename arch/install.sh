@@ -125,15 +125,6 @@ if has_cat shell; then
     pac atuin
     pac navi
 
-    echo ""
-    echo "── thefuck ──"
-    if ! has thefuck; then
-        python3 -m venv "$HOME/.thefuck-env"
-        "$HOME/.thefuck-env/bin/pip" install thefuck
-        green "  thefuck installed in ~/.thefuck-env"
-    else
-        info "already installed: thefuck"
-    fi
 fi
 
 # ─── tui ─────────────────────────────────────────────────────────────────────
@@ -173,6 +164,16 @@ if has_cat runtimes; then
     # Bun
     if ! has bun; then
         aur bun-bin bun
+    fi
+
+    # Claude Code (requires nvm node in PATH)
+    if ! has claude; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+        npm install -g @anthropic-ai/claude-code
+        green "  claude-code installed"
+    else
+        info "already installed: claude"
     fi
 
     # pyenv

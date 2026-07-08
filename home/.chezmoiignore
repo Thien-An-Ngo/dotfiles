@@ -35,6 +35,7 @@ chezmoi/
 # ─── Windows-only run_once script — skip on non-Windows ──────────────────────
 {{- if ne .chezmoi.os "windows" }}
 run_once_windows-setup.ps1.tmpl
+run_once_windows-setup.ps1
 {{- end }}
 
 # ─── Unix-only dotfiles — skip on Windows ────────────────────────────────────

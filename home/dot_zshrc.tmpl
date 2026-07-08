@@ -144,10 +144,6 @@ export PATH="$PATH:/opt/nvim"
 {{- end }}
 
 {{- if ne .machine "server" }}
-# ── thefuck ───────────────────────────────────────────────────────────────────
-[ -d "{{ .chezmoi.homeDir }}/.thefuck-env" ] && export PATH="{{ .chezmoi.homeDir }}/.thefuck-env/bin:$PATH"
-command -v thefuck &>/dev/null && eval "$(thefuck --alias fuck)"
-
 # ── Bun ───────────────────────────────────────────────────────────────────────
 export BUN_INSTALL="{{ .chezmoi.homeDir }}/.bun"
 [ -s "{{ .chezmoi.homeDir }}/.bun/_bun" ] && source "{{ .chezmoi.homeDir }}/.bun/_bun"
