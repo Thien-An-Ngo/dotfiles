@@ -101,7 +101,7 @@ if has_cat cli; then
     pac ripgrep rg
     pac fd
     pac btop
-    aur dust-bin dust
+    aur dust dust
     pac procs
     aur git-delta delta
     pac hyperfine
