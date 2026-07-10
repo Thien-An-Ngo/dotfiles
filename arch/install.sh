@@ -178,12 +178,12 @@ if has_cat runtimes; then
 
     # pyenv
     if ! has pyenv; then
-        aur pyenv
+        pac pyenv
     fi
 
     # uv
     if ! has uv; then
-        aur uv
+        pac uv
     fi
 
     # pipx
@@ -193,7 +193,7 @@ if has_cat runtimes; then
 
     # mise
     if ! has mise; then
-        aur mise
+        pac mise
     fi
 fi
 
