@@ -75,7 +75,7 @@ if has_cat core; then
     pac fzf
     pac neovim nvim
     pac github-cli gh
-    aur chezmoi
+    pac chezmoi
 
     echo ""
     echo "── Default shell ──"
@@ -101,20 +101,20 @@ if has_cat cli; then
     pac ripgrep rg
     pac fd
     pac btop
-    aur dust dust
+    pac dust dust
     pac procs
-    aur git-delta delta
+    pac git-delta delta
     pac hyperfine
     pac tealdeer tldr
-    aur watchexec-bin watchexec
+    pac watchexec
     aur topgrade-bin topgrade
-    aur dua-cli dua
-    aur bottom-bin btm
-    aur xh-bin xh
-    aur skim sk
+    pac dua-cli dua
+    pac bottom btm
+    pac xh
+    pac skim sk
     pac jq
-    aur yq-go yq
-    aur fx
+    pac go-yq yq
+    pac fx
 fi
 
 # ─── shell ───────────────────────────────────────────────────────────────────
@@ -131,11 +131,11 @@ fi
 if has_cat tui; then
     echo ""
     echo "── TUI tools ──"
-    aur yazi-bin yazi
-    aur gitui gitui
-    aur lazydocker-bin lazydocker
-    aur macchina-bin macchina
-    aur fastfetch-bin fastfetch
+    pac yazi
+    pac gitui
+    pac lazydocker
+    pac macchina
+    pac fastfetch
     pac lazygit
 fi
 
@@ -163,7 +163,7 @@ if has_cat runtimes; then
 
     # Bun
     if ! has bun; then
-        aur bun-bin bun
+        pac bun
     fi
 
     # Claude Code (requires nvm node in PATH)
@@ -213,14 +213,14 @@ if has_cat remote; then
     echo ""
     echo "── Remote ──"
     pac mosh
-    aur tmate
+    pac tmate
 fi
 
 # ─── db ──────────────────────────────────────────────────────────────────────
 if has_cat db; then
     echo ""
     echo "── Database ──"
-    aur pgcli
+    pac pgcli
 fi
 
 # ─── utils ───────────────────────────────────────────────────────────────────
@@ -229,14 +229,14 @@ if has_cat utils; then
     echo "── Misc utilities ──"
     pac wl-clipboard wl-copy
     pac xclip
-    aur atac-bin atac
+    pac atac
     aur posting posting
-    aur gdu-go gdu
+    pac gdu
     aur mani
     pac lychee
     pac kalker
     aur nb
-    aur dnote-bin dnote
+    aur dnote-cli-bin dnote
 fi
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
