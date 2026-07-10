@@ -201,9 +201,9 @@ fi
 if has_cat productivity; then
     echo ""
     echo "── Productivity ──"
-    aur taskwarrior task
-    aur timewarrior timew
-    aur just
+    pac task task
+    pac timew timew
+    pac just
     pac entr
     aur pet-git pet
 fi
