@@ -234,7 +234,7 @@ if has_cat utils; then
     pac gdu
     aur mani
     pac lychee
-    pac kalker
+    aur kalker-bin kalker
     aur nb
     aur dnote-cli-bin dnote
 fi
